@@ -1,11 +1,12 @@
 from flask import Flask, url_for, request, redirect, abort, jsonify
+from filmDAO import filmDAO
 
 app = Flask(__name__, static_url_path='', static_folder='staticpages')
 
-books =[
-    {"id": 1, "Title": "Harry Potter", "Author": "JK Rowling", "Price": 2500},
-    {"id": 2, "Title": "twilight", "Author": "Stephanie", "Price": 500},
-    {"id": 3, "Title": "Coding for Dummies", "Author": "Jon Hancock", "Price": 5300}]
+films =[
+    {"id": 1, "title": "Love Actually", "director": "Richard Curtis", "year": 2003},
+    {"id": 2, "title": "Elf", "director": "Jon Favreau", "year": 2003},
+    {"id": 3, "title": "Home Alone", "director": "Chris Columbus", "year": 1990}]
 nextID =4
 
 @app.route('/')
@@ -13,58 +14,64 @@ def index():
     return "hello"
 
 # return all
-@app.route('/books')
+@app.route('/films')
 def getAll():
-    return jsonify(books)
+    results = filmDAO.getAll()
+    return jsonify(results)
   
 # get by id  
-@app.route('/books/<int:id>')
+@app.route('/films/<int:id>')
 def findByID(id):
-    foundBooks = list(filter (lambda t : t["id"]==id, books))
-    if len(foundBooks)== 0:
-        return jsonify({}), 204
-    return jsonify(foundBooks[0])
+    '''foundfilms = list(filter (lambda t : t["id"]==id, films))
+    if len(foundfilms)== 0:
+        return jsonify({}), 204'''
+    return jsonify(filmDAO.findByID(id))
   
 # create  
-@app.route('/books', methods=['POST'])
+@app.route('/films', methods=['POST'])
 def create():
-    global nextID
+
     if not request.json:
         abort(400)
         
-    book = {
-        "id": nextID,
-        "Title": request.json["Title"],
-        "Author": request.json["Author"],
-        "Price": request.json["Price"] 
+    film = {
+        #"id": request.json["id"],
+        "title": request.json["title"],
+        "director": request.json["director"],
+        "year": request.json["year"] 
     }
-    books.append(book)
-    nextID += 1
-    return jsonify(book)
+
+    return jsonify(filmDAO.create(film))
 
 # update
-@app.route('/books/<int:id>', methods=['PUT'])
+@app.route('/films/<int:id>', methods=['PUT'])
 def update(id):
-    foundBooks = list(filter (lambda t : t["id"]==id, books))
-    if len(foundBooks)== 0:
-        return jsonify({}), 404
-    currentBook = foundBooks[0]
-    if 'Title' in request.json:
-        currentBook['Title'] = request.json['Title']
-    if 'Author' in request.json:
-        currentBook['Author'] = request.json['Author']
-    if 'Price' in request.json:
-        currentBook['Price'] = request.json['Price']   
-    return jsonify(currentBook)
+    foundFilm = filmDAO.findByID(id)
+    if not foundFilm:
+        abort(404)
+    if not request.json:
+        abort(404)
+    
+    if 'title' in request.json:
+        foundFilm['title'] = request.json['title']
+    if 'director' in request.json:
+        foundFilm['director'] = request.json['director']
+    if 'year' in request.json:
+        foundFilm['year'] = request.json['year']   
+    values = (foundFilm['title'],foundFilm['director'],foundFilm['year'],foundFilm['id'])
+    filmDAO.update(values)
+    return jsonify(foundFilm)
     
 # delete
-@app.route('/books/<int:id>', methods=['DELETE'])
+@app.route('/films/<int:id>', methods=['DELETE'])
 def delete(id):
-    foundBooks = list(filter (lambda t : t["id"]==id, books))
-    if len(foundBooks)== 0:
+    foundFilms = list(filter (lambda t : t["id"]==id, films))
+    if len(foundFilms)== 0:
         return jsonify({}), 404
-    books.remove(foundBooks[0])
+    films.remove(foundFilms[0])
+    filmDAO.delete(id)
     return jsonify({"done":True})
+
 
 
 if __name__ == "__main__":
