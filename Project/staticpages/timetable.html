@@ -1,0 +1,285 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<style type="text/css">
+	body{
+		background-color: #fbf5ff;}
+	#header { 
+		background-color: #d6a8f7;
+		text-align: center;
+		border: 2px solid purple; 
+		padding: 5px;
+		font-family: arial;
+		border-spacing: 10px;}
+	#display {
+		background-color: white;
+		width: 75%;
+		border: 2px solid black;
+		border-spacing: 10px;		
+		padding: 5px;
+		font-family: arial;
+		margin: 20px auto;
+		tr:nth-child(even) {background-color: #f2f2f2;}}
+	#createUpdateForm {
+		border: 2px solid black;
+		background-color: white;
+		margin: 20px;}
+	</style>
+	</head>
+	<body>
+		
+		<div id="header">
+			<h2>The Wardrobe</h2>
+			<h4>Staff Pages</h4>
+		</div>
+		
+		<div id="edit-timetable">
+			<table id = "editTimetable" style="display:none">
+				<tr>
+					<td>Employee</td>
+					<td><input type="text" name= "employee"></td>
+				</tr>
+				<tr>
+					<td>Monday</td>
+					<td><input type="text" name= "monday"></td>
+				</tr>
+				<tr>
+					<td>Tuesday</td>
+					<td><input type="int" name= "tuesday"></td>
+				</tr>
+				<tr>
+					<td>Wednesday</td>
+					<td><input type="currency" name= "wednesday"></td>
+				</tr>
+<tr>
+					<td>Thursday</td>
+					<td><input type="text" name= "thursday"></td>
+				</tr>
+				<tr>
+					<td>Friday</td>
+					<td><input type="int" name= "friday"></td>
+				</tr>
+				<tr>
+					<td>Saturday</td>
+					<td><input type="currency" name= "saturday"></td>
+				</tr>				
+				<tr>
+					<td>
+					<button id="create-button" onclick="doCreate()">Create</button>
+					<button id="update-button" onclick="doUpdate()">Update</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="display">
+			<h2>Employee Timetable</h2>
+			<button onclick="showUpdateForm()">Update</button>
+			<table id="timeTable" class="table">
+				<tr>
+					<th>Employee</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th></th><th></th>
+				</tr>
+
+			</table>
+		</div>
+		
+		<script>
+			function showUpdateForm(){
+				document.getElementById('display').style.display="none"
+				document.getElementById('editTimetable').style.display="block"
+				document.getElementById('create-button').style.display="block"
+				document.getElementById('update-button').style.display="none"
+			}
+			function showUpdate(thisElem){
+				var rowElement = thisElem.parentNode.parentNode;
+				 hours = readHoursfromRow(rowElement)
+				 populateForm(hours)
+				
+				document.getElementById('display').style.display="none"
+				document.getElementById('editTimetable').style.display="block"
+				document.getElementById('create-button').style.display="none"
+				document.getElementById('update-button').style.display="inline"
+			}
+			
+			function readhoursfromRow(rowElement){
+				hours = {}
+				hours.employee = rowElement.getAttribute("employee");
+				hours.monday = rowElement.cells[1].firstChild.textContent
+				hours.tuesday = rowElement.cells[2].firstChild.textContent
+				hours.wednesday = rowElement.cells[3].firstChild.textContent
+				hours.thursday = rowElement.cells[4].firstChild.textContent
+				hours.friday = rowElement.cells[5].firstChild.textContent
+				hours.saturday = rowElement.cells[6].firstChild.textContent
+				return hours
+			}
+			
+			function populateForm(hours){
+				var form = document.getElementById('editTimetable')
+				
+				form.querySelector('input[name="employee"]').value = hours.employee
+				form.querySelector('input[name="employee"]').disabled = true
+				form.querySelector('input[name="monday"]').value = hours.monday
+				form.querySelector('input[name="tuesday"]').value = hours.tuesday
+				form.querySelector('input[name="wednesday"]').value = hours.wednesday
+				form.querySelector('input[name="thursday"]').value = hours.thursday
+				form.querySelector('input[name="friday"]').value = hours.friday
+				form.querySelector('input[name="saturday"]').value = hours.saturday
+			}
+			
+			function clearForm(){
+				var form = document.getElementById('editTimetable')
+				
+				form.querySelector('input[name="employee"]').value = ''
+				form.querySelector('input[name="employee"]').disabled = false
+				form.querySelector('input[name="monday"]').value = ''
+				form.querySelector('input[name="tuesday"]').value = ''
+				form.querySelector('input[name="wednesday"]').value = ''
+				form.querySelector('input[name="thursday"]').value = ''
+				form.querySelector('input[name="friday"]').value = ''
+				form.querySelector('input[name="saturday"]').value = ''
+			}
+			
+			function doCreate(){
+				hours = gethoursFromForm()
+				$.ajax({
+					url:"/timetable",
+					data:JSON.stringify(hours),
+					method:'POST',
+					dataType:'JSON',
+					contentType: "application/json; charset=utf-8",
+					success: function(result){
+						console.log(result)
+						addhoursToTable(hours)
+						showDisplay()
+						clearForm()
+						},
+						"error":function(xhr, status, error){
+							console.log("error"+ error)
+						}
+				})
+			}
+			
+			function doUpdate(){
+				console.log("do update")
+				hours = gethoursFromForm()
+				updateTableRow(hours)
+				updateServer(hours)
+				showDisplay()
+				clearForm()
+			}
+			
+			function updateServer(hours){
+				//hours = gethoursFromForm()
+				$.ajax({
+					url:"/timetable/"+hours.employee,
+					data: JSON.stringify(hours),
+					method:"PUT",
+					dataType:"JSON",
+					contentType:"application/json; charset=utf-8",
+					success: function(result){
+						console.log("server")
+						updateTableRow(hours)
+						showDisplay()
+					},
+					"error":function(xhr, status, error){
+						console.log(error)
+					}
+				})
+			}
+			
+			function doDelete(thisElem){
+				var tableElement = document.getElementById('timeTable');
+				var rowElement = thisElem.parentNode.parentNode;
+				var index = rowElement.rowIndex;
+				employee  = rowElement.getAttribute("employee");
+				$.ajax({
+					url:"/timetable/"+employee,
+					method:"DELETE",
+					dataType:"JSON",
+					success:function(result){
+						tableElement.deleteRow(index);
+					},
+					"error":function(xhr, status, error){
+						console.log(error)
+					}
+				})
+			}
+			
+			function updateTableRow(hours){
+				rowElement = document.getElementById(hours.employee)
+				rowElem.cells[1].firstChild.textContent = hours.monday
+				rowElem.cells[2].firstChild.textContent = hours.tuesday
+				rowElem.cells[3].firstChild.textContent = hours.wednesday
+				rowElem.cells[1].firstChild.textContent = hours.thursday
+				rowElem.cells[2].firstChild.textContent = hours.friday
+				rowElem.cells[3].firstChild.textContent = hours.saturday
+				//console.log("updating table")
+			}
+			
+			function gethoursFromForm(){
+				var form = document.getElementById('editTimetable')
+				var hours = {}
+				hours.employee = form.querySelector('input[name="employee"]').value
+				hours.monday = form.querySelector('input[name="monday"]').value
+				hours.tuesday = form.querySelector('input[name="tuesday"]').value
+				hours.wednesday = form.querySelector('input[name="wednesday"]').value
+				hours.thursday = form.querySelector('input[name="thursday"]').value
+				hours.friday = form.querySelector('input[name="friday"]').value
+				hours.saturday = form.querySelector('input[name="saturday"]').value
+				//console.log(hours)
+				return hours
+			}
+			
+			function showDisplay(){
+				document.getElementById('display').style.display="block"
+				document.getElementById('edit-timetable').style.display="none"
+			}
+		
+			function populateTable(){
+				//ajax getAll
+				$. ajax({
+					url:'http://127.0.0.1:5000/timetable',
+					method:'GET',
+					dataType:'JSON',
+					success: function(results){
+						for (hours of results){
+							addhoursToTable(hours)
+						}
+					},
+					"error":function(xhr, status, error){
+						console.log("error "+error+ "code: "+status)
+					}
+				})	
+			}
+			
+			function addhoursToTable(hours){
+				//console.log("working")
+				tableElem = document.getElementById("timeTable")
+				rowElem = tableElem.insertRow(-1)
+				rowElem.setAttribute("employee", hours.employee)
+				cell1= rowElem.insertCell(0)
+				cell1.innerHTML= hours.employee
+				cell2= rowElem.insertCell(1)
+				cell2.innerHTML= hours.monday
+				cell3= rowElem.insertCell(2)
+				cell3.innerHTML= hours.tuesday
+				cell4= rowElem.insertCell(3)
+				cell4.innerHTML= hours.wednesday
+				cell2= rowElem.insertCell(4)
+				cell2.innerHTML= hours.thursday
+				cell3= rowElem.insertCell(5)
+				cell3.innerHTML= hours.friday
+				cell4= rowElem.insertCell(6)
+				cell4.innerHTML= hours.saturday
+				cell5= rowElem.insertCell(7)
+				cell5.innerHTML= '<button onclick="showUpdate(this)">Update</button>'
+				cell6= rowElem.insertCell(8)
+				cell6.innerHTML= '<button onclick="doDelete(this)">Delete</button>'				
+			}
+			populateTable()
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,255 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<style type="text/css">
+	body{
+		background-color: #fbf5ff;}
+	#header { 
+		background-color: #d6a8f7;
+		text-align: center;
+		border: 2px solid purple; 
+		padding: 5px;
+		font-family: arial;
+		border-spacing: 10px;}
+	#display {
+		background-color: white;
+		width: 75%;
+		border: 2px solid black;
+		border-spacing: 10px;		
+		padding: 5px;
+		font-family: arial;
+		margin: 20px auto;
+		tr:nth-child(even) {background-color: #f2f2f2;}}
+	#createUpdateForm {
+		border: 2px solid black;
+		background-color: white;
+		margin: 20px;}
+	</style>
+	</head>
+	<body>
+		
+		<div id="header">
+			<h2>The Wardrobe</h2>
+			<h4>Staff Pages</h4>
+		</div>
+		<div>
+			<button id="Timetable" onclick="location.href='timetable.html'">Timetable</button>
+		</div>
+		<div id="create-update" style="display:none">
+			
+			<table id ="createUpdateForm">
+				<tr>
+					<td>Code</td>
+					<td><input type="text" name= "code" id ="codeinput" maxlength= "6"pattern= "[0-9]{6}"></td>
+				</tr>
+				<tr>
+					<td>Product</td>
+					<td><input type="text" name= "Product"></td>
+				</tr>
+				<tr>
+					<td>Amount</td>
+					<td><input type="int" name= "amount"></td>
+				</tr>
+				<tr>
+					<td>Price</td>
+					<td><input type="currency" name= "price"></td>
+				</tr>			
+				<tr>
+					<td>
+					<button id="create-button" onclick="doCreate()">Create</button>
+					<button id="update-button" onclick="doUpdate()">Update</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="display">
+			<h2>Shop Stock</h2>
+			<button onclick="showCreate()">Create</button>
+			<table id="stockTable" class="table">
+				<tr>
+					<th>Code</th><th>Product</th><th>Amount</th><th>Price</th><th></th><th></th>
+				</tr>
+
+			</table>
+		</div>
+		
+		<script>
+			function showCreate(){
+				document.getElementById('display').style.display="none"
+				document.getElementById('create-update').style.display="block"
+				document.getElementById('create-button').style.display="block"
+				document.getElementById('update-button').style.display="none"
+			}
+			function showUpdate(thisElem){
+				var rowElement = thisElem.parentNode.parentNode;
+				 stock = readStockfromRow(rowElement)
+				 populateForm(stock)
+				
+				document.getElementById('display').style.display="none"
+				document.getElementById('create-update').style.display="block"
+				document.getElementById('create-button').style.display="none"
+				document.getElementById('update-button').style.display="inline"
+			}
+			
+			function readStockfromRow(rowElement){
+				stock = {}
+				stock.code = rowElement.getAttribute("code");
+				stock.Product = rowElement.cells[1].firstChild.textContent
+				stock.amount = rowElement.cells[2].firstChild.textContent
+				stock.price = rowElement.cells[3].firstChild.textContent
+				return stock
+			}
+			
+			function populateForm(stock){
+				var form = document.getElementById('createUpdateForm')
+				
+				form.querySelector('input[name="code"]').value = stock.code
+				form.querySelector('input[name="code"]').disabled = true
+				form.querySelector('input[name="Product"]').value = stock.Product
+				form.querySelector('input[name="amount"]').value = stock.amount
+				form.querySelector('input[name="price"]').value = stock.price
+			}
+			
+			function clearForm(){
+				var form = document.getElementById('createUpdateForm')
+				
+				form.querySelector('input[name="code"]').value = ''
+				form.querySelector('input[name="code"]').disabled = false
+				form.querySelector('input[name="Product"]').value = ''
+				form.querySelector('input[name="amount"]').value = ''
+				form.querySelector('input[name="price"]').value = ''
+			}
+			
+			function doCreate(){
+				stock = getstockFromForm()
+				$.ajax({
+					url:"/stock",
+					data:JSON.stringify(stock),
+					method:'POST',
+					dataType:'JSON',
+					contentType: "application/json; charset=utf-8",
+					success: function(result){
+						console.log(result)
+						addstockToTable(stock)
+						showDisplay()
+						clearForm()
+						},
+						"error":function(xhr, status, error){
+							console.log("error"+ error)
+						}
+				})
+			}
+			
+			function doUpdate(){
+				console.log("do update")
+				stock = getstockFromForm()
+				updateTableRow(stock)
+				updateServer(stock)
+				showDisplay()
+				clearForm()
+			}
+			
+			function updateServer(stock){
+				//stock = getstockFromForm()
+				$.ajax({
+					url:"/stock/"+stock.code,
+					data: JSON.stringify(stock),
+					method:"PUT",
+					dataType:"JSON",
+					contentType:"application/json; charset=utf-8",
+					success: function(result){
+						console.log("server")
+						updateTableRow(stock)
+						showDisplay()
+					},
+					"error":function(xhr, status, error){
+						console.log(error)
+					}
+				})
+			}
+			
+			function doDelete(thisElem){
+				var tableElement = document.getElementById('stockTable');
+				var rowElement = thisElem.parentNode.parentNode;
+				var index = rowElement.rowIndex;
+				code  = rowElement.getAttribute("code");
+				$.ajax({
+					url:"/stock/"+code,
+					method:"DELETE",
+					dataType:"JSON",
+					success:function(result){
+						tableElement.deleteRow(index);
+					},
+					"error":function(xhr, status, error){
+						console.log(error)
+					}
+				})
+			}
+			
+			function updateTableRow(stock){
+				rowElement = document.getElementById(stock.code)
+				rowElem.cells[1].firstChild.textContent = stock.Product
+				rowElem.cells[2].firstChild.textContent = stock.amount
+				rowElem.cells[3].firstChild.textContent =stock.price
+				//console.log("updating table")
+			}
+			
+			function getstockFromForm(){
+				var form = document.getElementById('createUpdateForm')
+				var stock = {}
+				stock.code = form.querySelector('input[name="code"]').value
+				stock.Product = form.querySelector('input[name="Product"]').value
+				stock.amount = form.querySelector('input[name="amount"]').value
+				stock.price = form.querySelector('input[name="price"]').value
+				//console.log(stock)
+				return stock
+			}
+			
+			function showDisplay(){
+				document.getElementById('display').style.display="block"
+				document.getElementById('create-update').style.display="none"
+			}
+		
+			function populateTable(){
+				//ajax getAll
+				$. ajax({
+					url:'http://127.0.0.1:5000/stock',
+					method:'GET',
+					dataType:'JSON',
+					success: function(results){
+						for (stock of results){
+							addstockToTable(stock)
+						}
+					},
+					"error":function(xhr, status, error){
+						console.log("error "+error+ "code: "+status)
+					}
+				})	
+			}
+			
+			function addstockToTable(stock){
+				//console.log("working")
+				tableElem = document.getElementById("stockTable")
+				rowElem = tableElem.insertRow(-1)
+				rowElem.setAttribute("code", stock.code)
+				cell1= rowElem.insertCell(0)
+				cell1.innerHTML= stock.code
+				cell2= rowElem.insertCell(1)
+				cell2.innerHTML= stock.Product
+				cell3= rowElem.insertCell(2)
+				cell3.innerHTML= stock.amount
+				cell4= rowElem.insertCell(3)
+				cell4.innerHTML= stock.price
+				cell5= rowElem.insertCell(4)
+				cell5.innerHTML= '<button onclick="showUpdate(this)">Update</button>'
+				cell6= rowElem.insertCell(5)
+				cell6.innerHTML= '<button onclick="doDelete(this)">Delete</button>'				
+			}
+			populateTable()
+		</script>
+	</body>
+
+</html>
