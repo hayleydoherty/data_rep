@@ -13,15 +13,18 @@
 		padding: 5px;
 		font-family: arial;
 		border-spacing: 10px;}
-	#display {
+	#timeTable {
 		background-color: white;
 		width: 75%;
 		border: 2px solid black;
 		border-spacing: 10px;		
 		padding: 5px;
 		font-family: arial;
-		margin: 20px auto;
 		tr:nth-child(even) {background-color: #f2f2f2;}}
+	#display {
+		width: 75%;
+		font-family: arial;
+		margin: 20px auto;}
 	#createUpdateForm {
 		border: 2px solid black;
 		background-color: white;
@@ -47,11 +50,11 @@
 				</tr>
 				<tr>
 					<td>Tuesday</td>
-					<td><input type="int" name= "tuesday"></td>
+					<td><input type="text" name= "tuesday"></td>
 				</tr>
 				<tr>
 					<td>Wednesday</td>
-					<td><input type="currency" name= "wednesday"></td>
+					<td><input type="text" name= "wednesday"></td>
 				</tr>
 <tr>
 					<td>Thursday</td>
@@ -59,16 +62,16 @@
 				</tr>
 				<tr>
 					<td>Friday</td>
-					<td><input type="int" name= "friday"></td>
+					<td><input type="text" name= "friday"></td>
 				</tr>
 				<tr>
 					<td>Saturday</td>
-					<td><input type="currency" name= "saturday"></td>
+					<td><input type="text" name= "saturday"></td>
 				</tr>				
 				<tr>
 					<td>
-					<button id="create-button" onclick="doCreate()">Create</button>
-					<button id="update-button" onclick="doUpdate()">Update</button>
+					<button id="create-button" onclick="CreateHours()">Create</button>
+					<button id="update-button" onclick="UpdateHours()">Update</button>
 					</td>
 				</tr>
 			</table>
@@ -76,13 +79,12 @@
 
 		<div id="display">
 			<h2>Employee Timetable</h2>
-			<button onclick="showUpdateForm()">Update</button>
 			<table id="timeTable" class="table">
 				<tr>
 					<th>Employee</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th></th><th></th>
 				</tr>
-
 			</table>
+			<button onclick="showUpdateForm()">Create</button>
 		</div>
 		
 		<script>
@@ -98,12 +100,12 @@
 				 populateForm(hours)
 				
 				document.getElementById('display').style.display="none"
-				document.getElementById('editTimetable').style.display="block"
+				document.getElementById('edit-timetable').style.display="block"
 				document.getElementById('create-button').style.display="none"
 				document.getElementById('update-button').style.display="inline"
 			}
 			
-			function readhoursfromRow(rowElement){
+			function readHoursfromRow(rowElement){
 				hours = {}
 				hours.employee = rowElement.getAttribute("employee");
 				hours.monday = rowElement.cells[1].firstChild.textContent
@@ -141,7 +143,7 @@
 				form.querySelector('input[name="saturday"]').value = ''
 			}
 			
-			function doCreate(){
+			function CreateHours(){
 				hours = gethoursFromForm()
 				$.ajax({
 					url:"/timetable",
@@ -161,16 +163,16 @@
 				})
 			}
 			
-			function doUpdate(){
+			function UpdateHours(){
 				console.log("do update")
 				hours = gethoursFromForm()
-				updateTableRow(hours)
-				updateServer(hours)
+				updateTableRowHours(hours)
+				updateServer2(hours)
 				showDisplay()
-				clearForm()
+				//clearForm()
 			}
 			
-			function updateServer(hours){
+			function updateServer2(hours){
 				//hours = gethoursFromForm()
 				$.ajax({
 					url:"/timetable/"+hours.employee,
@@ -207,15 +209,15 @@
 				})
 			}
 			
-			function updateTableRow(hours){
+			function updateTableRowHours(hours){
 				rowElement = document.getElementById(hours.employee)
 				rowElem.cells[1].firstChild.textContent = hours.monday
 				rowElem.cells[2].firstChild.textContent = hours.tuesday
 				rowElem.cells[3].firstChild.textContent = hours.wednesday
-				rowElem.cells[1].firstChild.textContent = hours.thursday
-				rowElem.cells[2].firstChild.textContent = hours.friday
-				rowElem.cells[3].firstChild.textContent = hours.saturday
-				//console.log("updating table")
+				rowElem.cells[4].firstChild.textContent = hours.thursday
+				rowElem.cells[5].firstChild.textContent = hours.friday
+				rowElem.cells[6].firstChild.textContent = hours.saturday
+				console.log("updating table")
 			}
 			
 			function gethoursFromForm(){
@@ -228,7 +230,7 @@
 				hours.thursday = form.querySelector('input[name="thursday"]').value
 				hours.friday = form.querySelector('input[name="friday"]').value
 				hours.saturday = form.querySelector('input[name="saturday"]').value
-				//console.log(hours)
+				console.log(hours)
 				return hours
 			}
 			
@@ -267,16 +269,16 @@
 				cell3.innerHTML= hours.tuesday
 				cell4= rowElem.insertCell(3)
 				cell4.innerHTML= hours.wednesday
-				cell2= rowElem.insertCell(4)
-				cell2.innerHTML= hours.thursday
-				cell3= rowElem.insertCell(5)
-				cell3.innerHTML= hours.friday
-				cell4= rowElem.insertCell(6)
-				cell4.innerHTML= hours.saturday
-				cell5= rowElem.insertCell(7)
-				cell5.innerHTML= '<button onclick="showUpdate(this)">Update</button>'
-				cell6= rowElem.insertCell(8)
-				cell6.innerHTML= '<button onclick="doDelete(this)">Delete</button>'				
+				cell5= rowElem.insertCell(4)
+				cell5.innerHTML= hours.thursday
+				cell6= rowElem.insertCell(5)
+				cell6.innerHTML= hours.friday
+				cell7= rowElem.insertCell(6)
+				cell7.innerHTML= hours.saturday
+				cell8= rowElem.insertCell(7)
+				cell8.innerHTML= '<button onclick="showUpdate(this)">Update</button>'
+				cell9= rowElem.insertCell(8)
+				cell9.innerHTML= '<button onclick="doDelete(this)">Delete</button>'				
 			}
 			populateTable()
 		</script>

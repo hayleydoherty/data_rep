@@ -30,11 +30,45 @@ stock4 = {
     'price': 23.60
 }
 
-#create
+hours1 = {
+    'employee': 'Lauren',
+    'monday': "2-6",
+    'tuesday': "9-2",
+    'wednesday': "9-3",
+    'thursday': "2-6",
+    'friday': "9-2",
+    'saturday': "OFF"
+}
+hours2 = {
+    'employee': 'Lauren',
+    'monday': "2-6",
+    'tuesday': "9-2",
+    'wednesday': "9-3",
+    'thursday': "2-6",
+    'friday': "9-1",
+    'saturday': "OFF"
+}
+#result = stockDAO.getHours()
+#print(result)
+
+#returnValue = stockDAO.createHours(hours1)
+#print(returnValue)
+
+returnValue = stockDAO.updateHours(hours2)
+
+# find by employee
+result = stockDAO.findByEmp(hours1['employee'])
+print(result)
+
+#result = stockDAO.getHours()
+#print(result)
+
+
+'''#create
 first = stockDAO.create(stock1)
 #print(returnValue)
 
-'''# find by id
+# find by id
 result = stockDAO.findByID(stock1['code'])
 print(result)
 
@@ -45,10 +79,17 @@ returnValue = stockDAO.getAll()
 print(returnValue)
 
 #update
-returnValue= stockDAO.update(stock4)
+#returnValue= stockDAO.update(stock4)
+#print('Update done')
+
+#update Hours
+returnValue= stockDAO.updateHours(hours1)
 print('Update done')
 
-# get all
+result = stockDAO.getHours()
+print(result)'''
+
+'''# get all
 returnValue = stockDAO.getAll()
 print(returnValue)
 
