@@ -19,8 +19,15 @@
 		border: 2px solid black;
 		border-spacing: 10px;		
 		padding: 5px;
+		font-family: arial;}
+	#editTimeTable {
+		background-color: white;
+		border: 2px solid black;
+		width: 50%;
+		border-spacing: 10px;		
+		padding: 5px;
 		font-family: arial;
-		tr:nth-child(even) {background-color: #f2f2f2;}}
+		margin: 20px auto;}
 	#display {
 		width: 75%;
 		font-family: arial;
@@ -56,7 +63,7 @@
 					<td>Wednesday</td>
 					<td><input type="text" name= "wednesday"></td>
 				</tr>
-<tr>
+				<tr>
 					<td>Thursday</td>
 					<td><input type="text" name= "thursday"></td>
 				</tr>
@@ -71,7 +78,6 @@
 				<tr>
 					<td>
 					<button id="create-button" onclick="CreateHours()">Create</button>
-					<button id="update-button" onclick="UpdateHours()">Update</button>
 					</td>
 				</tr>
 			</table>
@@ -81,18 +87,18 @@
 			<h2>Employee Timetable</h2>
 			<table id="timeTable" class="table">
 				<tr>
-					<th>Employee</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th></th><th></th>
+					<th>Employee</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th></th>
 				</tr>
 			</table>
-			<button onclick="showUpdateForm()">Create</button>
+			<button onclick="showCreateForm()">Create</button>
 		</div>
 		
 		<script>
-			function showUpdateForm(){
+			function showCreateForm(){
 				document.getElementById('display').style.display="none"
 				document.getElementById('editTimetable').style.display="block"
 				document.getElementById('create-button').style.display="block"
-				document.getElementById('update-button').style.display="none"
+				document.getElementById('create-button').style.display="block"
 			}
 			function showUpdate(thisElem){
 				var rowElement = thisElem.parentNode.parentNode;
@@ -104,7 +110,6 @@
 				document.getElementById('create-button').style.display="none"
 				document.getElementById('update-button').style.display="inline"
 			}
-			
 			function readHoursfromRow(rowElement){
 				hours = {}
 				hours.employee = rowElement.getAttribute("employee");
@@ -162,16 +167,6 @@
 						}
 				})
 			}
-			
-			function UpdateHours(){
-				console.log("do update")
-				hours = gethoursFromForm()
-				updateTableRowHours(hours)
-				updateServer2(hours)
-				showDisplay()
-				//clearForm()
-			}
-			
 			function updateServer2(hours){
 				//hours = gethoursFromForm()
 				$.ajax({
@@ -190,7 +185,6 @@
 					}
 				})
 			}
-			
 			function doDelete(thisElem){
 				var tableElement = document.getElementById('timeTable');
 				var rowElement = thisElem.parentNode.parentNode;
@@ -274,11 +268,9 @@
 				cell6= rowElem.insertCell(5)
 				cell6.innerHTML= hours.friday
 				cell7= rowElem.insertCell(6)
-				cell7.innerHTML= hours.saturday
+				cell7.innerHTML= hours.saturday	
 				cell8= rowElem.insertCell(7)
-				cell8.innerHTML= '<button onclick="showUpdate(this)">Update</button>'
-				cell9= rowElem.insertCell(8)
-				cell9.innerHTML= '<button onclick="doDelete(this)">Delete</button>'				
+				cell8.innerHTML= '<button onclick="doDelete(this)">Delete</button>'					
 			}
 			populateTable()
 		</script>
